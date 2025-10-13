@@ -1,0 +1,72 @@
+#!/bin/bash
+# =========================================================
+#  Optimized Full Recon Automation Script
+# =========================================================
+
+LIVE_FILE="live.txt"
+if [ ! -f "$LIVE_FILE" ]; then
+    echo "[!] $LIVE_FILE not found. Please create it with your domains."
+    exit 1
+fi
+
+mkdir -p results/js_results
+
+# ================== ************** ===================== #
+# ================== URL COLLECTION ===================== #
+# ================== ************** ===================== #
+
+echo "[*] Collecting URLs..."
+cat "$LIVE_FILE" | gau > results/gau.txt
+cat "$LIVE_FILE" | waybackurls > results/waybackurls.txt
+cat "$LIVE_FILE" | katana > results/katana.txt
+cat "$LIVE_FILE" | cariddi > results/cariddi.txt
+
+cat results/*.txt | sort -u > results/Uniq_urls.txt
+
+echo "[*] Checking live URLs..."
+cat results/Uniq_urls.txt | httpx -silent > results/liveurls.txt
+
+echo "[*] Searching for sensitive patterns..."
+grep -E -i '\.env$|\.git/|\.sql$|\.bak$|/phpinfo|/config|/admin|/wp-admin|/upload|token=|api_key=|access_token=|AKIA[0-9A-Z]{16}|-----BEGIN PRIVATE KEY-----|\.js$|\.pdf$|\.docx?$|\.zip$' results/liveurls.txt | tee results/final_grep.txt
+
+# ================== ************** ===================== #
+# ================== JS ENUMERATION ===================== #
+# ================== ************** ===================== #
+
+echo "[*] Extracting JS links from live URLs..."
+grep "\.js$" results/liveurls.txt | sort -u > results/js_results/jslinks.txt
+
+JS_LINKS="results/js_results/jslinks.txt"
+JS_LIVE="results/js_results/jslive.txt"
+NUCLEI_OUT="results/js_results/js_nuclei.txt"
+LINKFINDER_OUT="results/js_results/endpoints_linkfinder.txt"
+SECRETFINDER_OUT="results/js_results/endpoints_secretfinder.txt"
+MANTRA_OUT="results/js_results/Mantra.txt"
+JSLEAK_OUT="results/js_results/jsleaks_output.txt"
+
+echo "[*] Checking live JS links..."
+cat "$JS_LINKS" | httpx -silent > "$JS_LIVE"
+
+echo "[*] Running LinkFinder..."
+cat "$JS_LIVE" | while read -r url; do
+    python3 /home/tools/LinkFinder/linkfinder.py -i "$url" -o cli
+done | tee "$LINKFINDER_OUT"
+
+echo "[*] Running SecretFinder..."
+cat "$JS_LIVE" | while read -r url; do
+    python3 /home/tools/secretfinder/SecretFinder.py -i "$url" -o cli
+done | tee "$SECRETFINDER_OUT"
+
+echo "[*] Running Mantra..."
+cat "$JS_LIVE" | mantra | tee "$MANTRA_OUT"
+
+echo "[*] Running jsleak..."
+cat "$LIVE_FILE" | jsleak -l -s | sort -u | tee "$JSLEAK_OUT"
+
+echo "[*] Running Nuclei on JS links..."
+nuclei -l "$JS_LIVE" -t ~/.local/nuclei-templates/http/exposures/ -o "$NUCLEI_OUT"
+
+echo "[+] Done! All results saved in 'results/' and 'results/js_results/'"
+
+
+
