@@ -16,11 +16,11 @@ A streamlined Bash script for web reconnaissance in cybersecurity assessments. I
 - Create `live.txt` with one domain/subdomain per line (e.g., example.com).
 
 ## Installation
-1. Clone this repo: `git clone https://github.com/yourusername/optimized-recon-automation.git`
-2. `cd optimized-recon-automation`
-3. Make executable: `chmod +x main.sh`
+1. Clone this repo: `git clone https://github.com/vivekghinaiya/js_enum`
+2. `cd js_enum`
+3. Make executable: `chmod +x js_enum`
 4. Add targets to `live.txt`.
-5. Run: `./main.sh`
+5. Run: `./js_enum`
 
 Outputs go to `./results/` (add to .gitignore for temp runs).
 
