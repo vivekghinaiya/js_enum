@@ -43,6 +43,7 @@ LINKFINDER_OUT="results/js_results/endpoints_linkfinder.txt"
 SECRETFINDER_OUT="results/js_results/endpoints_secretfinder.txt"
 MANTRA_OUT="results/js_results/Mantra.txt"
 JSLEAK_OUT="results/js_results/jsleaks_output.txt"
+JSECRET_OUT="results/js_results/jsecret_output.txt"
 
 echo "[*] Checking live JS links..."
 cat "$JS_LINKS" | httpx -silent > "$JS_LIVE"
@@ -62,6 +63,9 @@ cat "$JS_LIVE" | mantra | tee "$MANTRA_OUT"
 
 echo "[*] Running jsleak..."
 cat "$LIVE_FILE" | jsleak -l -s | sort -u | tee "$JSLEAK_OUT"
+
+echo "[*] Running jsecret..."
+cat "$LIVE_FILE" | jsecret | tee "$JSECRET_OUT"
 
 echo "[*] Running Nuclei on JS links..."
 nuclei -l "$JS_LIVE" -t ~/.local/nuclei-templates/http/exposures/ -o "$NUCLEI_OUT"
