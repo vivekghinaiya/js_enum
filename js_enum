@@ -62,10 +62,10 @@ echo "[*] Running Mantra..."
 cat "$JS_LIVE" | mantra | tee "$MANTRA_OUT"
 
 echo "[*] Running jsleak..."
-cat "$LIVE_FILE" | jsleak -l -s | sort -u | tee "$JSLEAK_OUT"
+cat "$JS_LIVE" | jsleak -l -s | sort -u | tee "$JSLEAK_OUT"
 
 echo "[*] Running jsecret..."
-cat "$LIVE_FILE" | jsecret | tee "$JSECRET_OUT"
+cat "$JS_LIVE" | jsecret | tee "$JSECRET_OUT"
 
 echo "[*] Running Nuclei on JS links..."
 nuclei -l "$JS_LIVE" -t ~/.local/nuclei-templates/http/exposures/ -o "$NUCLEI_OUT"
