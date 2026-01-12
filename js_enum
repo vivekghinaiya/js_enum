@@ -44,18 +44,24 @@ SECRETFINDER_OUT="results/js_results/endpoints_secretfinder.txt"
 MANTRA_OUT="results/js_results/Mantra.txt"
 JSLEAK_OUT="results/js_results/jsleaks_output.txt"
 JSECRET_OUT="results/js_results/jsecret_output.txt"
+CARIDDI_SECRET="results/js_results/cariddi_secret.txt"
+CARIDDI_JUICYENDPOINT="results/js_results/cariddi_juicy.txt"
 
 echo "[*] Checking live JS links..."
 cat "$JS_LINKS" | httpx -silent > "$JS_LIVE"
-
-echo "[*] Running Mantra..."
-cat "$JS_LIVE" | mantra | tee "$MANTRA_OUT"
 
 echo "[*] Running jsleak..."
 cat "$JS_LIVE" | jsleak -l -s | sort -u | tee "$JSLEAK_OUT"
 
 echo "[*] Running jsecret..."
 cat "$JS_LIVE" | jsecret | tee "$JSECRET_OUT"
+
+echo "[*] Running cariddi..."
+cat "$JS_LIVE" | cariddi -s | tee "$CARIDDI_SECRET"
+cat "$JS_LIVE" | cariddi -e | tee "$CARIDDI_JUICYENDPOINT"
+
+echo "[*] Running Mantra..."
+cat "$JS_LIVE" | mantra | tee "$MANTRA_OUT"
 
 echo "[*] Running LinkFinder..."
 cat "$JS_LIVE" | while read -r url; do
@@ -67,11 +73,8 @@ cat "$JS_LIVE" | while read -r url; do
     python3 /home/tools/secretfinder/SecretFinder.py -i "$url" -o cli
 done | tee "$SECRETFINDER_OUT"
 
-
 echo "[*] Running Nuclei on JS links..."
 nuclei -l "$JS_LIVE" -t ~/.local/nuclei-templates/http/exposures/ -o "$NUCLEI_OUT"
 
 echo "[+] Done! All results saved in 'results/' and 'results/js_results/'"
-
-
-
+                                                                            
